@@ -1,6 +1,6 @@
 import express from "express"
 import ProductsModel from "./productModel.js"
-
+import q2m from "query-to-mongo"
 import createHttpError from "http-errors"
 
 const productsRouter = express.Router()
@@ -17,14 +17,24 @@ productsRouter.post("/", async (req, res, next) => {
 
 productsRouter.get("/", async (req, res, next) => {
   try {
-    const searchCategory = req.query.category
-    const searchPrice = req.query.price
-    const filter = {}
-    if (searchCategory) filter.category = searchCategory
-    if (searchPrice) filter.price = { $lte: searchPrice }
-    const products = await ProductsModel.find(filter)
+    // const searchCategory = req.query.category
+    // const searchPrice = req.query.price
+    // const filter = {}
+    // if (searchCategory) filter.category = searchCategory
+    // if (searchPrice) filter.price = { $lte: searchPrice }
+
+    const mongoQuery = q2m(req.query)
+    const total = await ProductsModel.countDocuments(mongoQuery.criteria)
+    const products = await ProductsModel.find(mongoQuery.criteria, mongoQuery.options.fields)
+      .skip(mongoQuery.options.skip)
+      .sort(mongoQuery.options.sort)
+      .limit(mongoQuery.options.limit)
     if (products) {
-      res.send(products)
+      res.send({
+        links: mongoQuery.links("http://localhost:3006/products", total),
+        totalPages: Math.ceil(total / mongoQuery.options.limit),
+        products
+      })
     } else {
       next(createHttpError(404, "No products found!"))
     }
