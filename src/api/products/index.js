@@ -17,15 +17,18 @@ productsRouter.post("/", async (req, res, next) => {
 
 productsRouter.get("/", async (req, res, next) => {
   try {
-    const products = await ProductsModel.find()
-    // .populate({ path: "author", select: "firstName lastName" })
-    if (products.length === 0) {
-      res.send("No products found, please add some products.")
-    } else {
+    const searchCategory = req.query.category
+    const searchPrice = req.query.price
+    const filter = {}
+    if (searchCategory) filter.category = searchCategory
+    if (searchPrice) filter.price = { $lte: searchPrice }
+    const products = await ProductsModel.find(filter)
+    if (products) {
       res.send(products)
+    } else {
+      next(createHttpError(404, "No products found!"))
     }
   } catch (error) {
-    console.log("error getting products")
     next(error)
   }
 })
