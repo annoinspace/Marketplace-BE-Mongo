@@ -4,6 +4,7 @@ import cors from "cors"
 import { badRequestHandler, notFoundHandler, genericErrorHandler } from "./errorHandlers.js"
 import mongoose from "mongoose"
 import productsRouter from "./api/products/index.js"
+import usersRouter from "./api/users/index.js"
 
 const server = express()
 
@@ -29,6 +30,7 @@ server.use(cors(corsOptions))
 // ****************** ENDPOINTS ********************
 
 server.use("/products", productsRouter)
+server.use("/users", usersRouter)
 
 // ****************** ERROR HANDLERS ****************
 server.use(badRequestHandler) // 400
@@ -39,7 +41,7 @@ mongoose.set("strictQuery", false)
 mongoose.connect(process.env.MONGO_URL)
 
 mongoose.connection.on("connected", () => {
-  console.log("connectd to mongo!")
+  console.log("connected to mongo!")
   server.listen(port, () => {
     console.table(listEndpoints(server))
     console.log("server is running on port:", port)
