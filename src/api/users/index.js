@@ -1,4 +1,5 @@
 import express from "express"
+import mongoose from "mongoose"
 import createHttpError from "http-errors"
 import UsersModel from "./userModel.js"
 import CartsModel from "./cartModel.js"
@@ -78,45 +79,53 @@ usersRouter.delete("/:userId", async (req, res, next) => {
 
 // ----------------------------------- embedded cart routes -------------------------------
 
-usersRouter.post("/:userId/cart", async (req, res, next) => {
-  try {
-    const selectedProduct = await ProductsModel.findById(req.body.productId) // , { _id: 0 } here we could use projection {_id: 0} to remove the _id from the Product. We should do this because in this way Mongo will automagically create a unique _id for every item in the array
+// usersRouter.post("/:userId/cart", async (req, res, next) => {
+//   try {
+//     const selectedProduct = await ProductsModel.findById(req.body.productId) // , { _id: 0 } here we could use projection {_id: 0} to remove the _id from the Product. We should do this because in this way Mongo will automagically create a unique _id for every item in the array
 
-    if (selectedProduct) {
-      const productToInsert = {
-        ...selectedProduct.toObject(),
-        addedToCart: new Date()
-      }
-      console.log("Product TO INSERT: ", productToInsert)
+//     if (selectedProduct) {
+//       const productToInsert = {
+//         ...selectedProduct.toObject(),
+//         addedToCart: new Date()
+//       }
+//       console.log("Product TO INSERT: ", productToInsert)
 
-      let cart = await CartsModel.findById(req.params.userId)
-      if (!cart) {
-        cart = new CartsModel()
-      } else {
-        cart = await CartsModel.findByIdAndUpdate(
-          req.params.userId, // WHO
-          { $push: { productId: productToInsert } }, // HOW
-          { new: true, runValidators: true }
-        ) // OPTIONS
-      }
+//       let cart = await CartsModel.findById(req.params.userId)
+//       if (!cart) {
+//         const id = mongoose.Types.ObjectId(req.params.userId)
 
-      const updatedUser = await UsersModel.findByIdAndUpdate(
-        req.params.userId, // WHO
-        { $push: { cart: productToInsert } }, // HOW
-        { new: true, runValidators: true } // OPTIONS
-      )
-      if (updatedUser) {
-        res.send(updatedUser)
-      } else {
-        next(createHttpError(404, `User with id ${req.params.userId} not found!`))
-      }
-    } else {
-      next(createHttpError(404, `Product with id ${req.body.productId} not found!`))
-    }
-  } catch (error) {
-    next(error)
-  }
-})
+//         cart = new CartsModel(
+//           id,
+//           req.params.userId,
+//           { $push: { productId: productToInsert } }, // HOW
+//           { new: true, runValidators: true }
+//         )
+//         cart.save()
+//       } else {
+//         cart = await CartsModel.findByIdAndUpdate(
+//           req.params.userId, // WHO
+//           { $push: { productId: productToInsert } }, // HOW
+//           { new: true, runValidators: true }
+//         ) // OPTIONS
+//       }
+
+//       const updatedUser = await UsersModel.findByIdAndUpdate(
+//         req.params.userId, // WHO
+//         { $push: { cart: productToInsert } }, // HOW
+//         { new: true, runValidators: true } // OPTIONS
+//       )
+//       if (updatedUser) {
+//         res.send(updatedUser)
+//       } else {
+//         next(createHttpError(404, `User with id ${req.params.userId} not found!`))
+//       }
+//     } else {
+//       next(createHttpError(404, `Product with id ${req.body.productId} not found!`))
+//     }
+//   } catch (error) {
+//     next(error)
+//   }
+// })
 
 // usersRouter.post("/:userId/cart", async (req, res, next) => {
 //   try {

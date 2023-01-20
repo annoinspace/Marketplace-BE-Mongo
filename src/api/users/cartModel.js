@@ -9,8 +9,7 @@ const cartSchema = new Schema(
       {
         productId: { type: mongoose.Types.ObjectId, ref: "Product" }
       }
-    ],
-    status: { type: String, required: true }
+    ]
   },
   { timestamps: true }
 )
