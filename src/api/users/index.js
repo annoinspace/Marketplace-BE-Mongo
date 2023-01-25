@@ -160,7 +160,10 @@ usersRouter.delete("/:userId", async (req, res, next) => {
 
 usersRouter.get("/:userId/cart", async (req, res, next) => {
   try {
-    const user = await UsersModel.findById(req.params.userId)
+    const user = await UsersModel.findById(req.params.userId).populate({
+      path: "cartContent",
+      select: "name brand price"
+    })
     if (user) {
       if (user.cart.length === 0) {
         res.send(` User ${user.name} ${user.surname} with id:${user._id} has no products in cart`)
